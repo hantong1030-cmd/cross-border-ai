@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="可直接预览的跨境电商 AI 后台高保真原型" />
+    <title>CrossBorder AI Admin · 高保真原型</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #06111f;
+        --panel: rgba(11, 24, 43, 0.74);
+        --panel-strong: rgba(9, 19, 34, 0.92);
+        --stroke: rgba(255, 255, 255, 0.1);
+        --muted: #8fa3bd;
+        --text: #eef7ff;
+        --cyan: #29f3d1;
+        --blue: #55a6ff;
+        --violet: #8a5cff;
+        --green: #56f39a;
+        --amber: #ffd166;
+        --rose: #ff6b91;
+        --shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-width: 1180px;
+        min-height: 100vh;
+        overflow-x: auto;
+        background:
+          radial-gradient(circle at 9% 2%, rgba(41, 243, 209, 0.24), transparent 28%),
+          radial-gradient(circle at 72% 0%, rgba(138, 92, 255, 0.22), transparent 26%),
+          radial-gradient(circle at 82% 82%, rgba(85, 166, 255, 0.14), transparent 34%),
+          linear-gradient(135deg, #06111f 0%, #081324 45%, #101827 100%);
+        color: var(--text);
+      }
+
+      button, input { font: inherit; }
+
+      .noise {
+        pointer-events: none;
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.34;
+        background-image:
+          linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+        background-size: 44px 44px;
+        mask-image: linear-gradient(to bottom, black, transparent 78%);
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: 292px minmax(888px, 1fr);
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        padding: 22px 18px;
+        border-right: 1px solid var(--stroke);
+        background: rgba(4, 10, 20, 0.64);
+        backdrop-filter: blur(26px);
+      }
+
+      .brand-card {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 14px;
+        border: 1px solid rgba(41, 243, 209, 0.2);
+        border-radius: 24px;
+        background: linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.025));
+        box-shadow: 0 0 42px rgba(41, 243, 209, 0.08);
+      }
+
+      .logo {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 17px;
+        color: #04111d;
+        font-size: 24px;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--cyan), #9bffd7);
+        box-shadow: 0 14px 32px rgba(41, 243, 209, 0.24);
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: var(--cyan);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .28em;
+        text-transform: uppercase;
+      }
+
+      .brand-card h1 {
+        margin: 3px 0 0;
+        font-size: 18px;
+        letter-spacing: -.03em;
+      }
+
+      .nav {
+        display: grid;
+        gap: 8px;
+        margin-top: 28px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 48px;
+        padding: 0 15px;
+        border: 1px solid transparent;
+        border-radius: 18px;
+        color: #9dafc6;
+        text-decoration: none;
+        transition: .18s ease;
+      }
+
+      .nav-item:hover { background: rgba(255,255,255,.055); color: white; }
+
+      .nav-item.active {
+        color: #06111f;
+        background: linear-gradient(135deg, var(--cyan), #76ffd7);
+        box-shadow: 0 18px 36px rgba(41, 243, 209, 0.22);
+      }
+
+      .nav-icon {
+        display: grid;
+        place-items: center;
+        width: 24px;
+        font-size: 17px;
+      }
+
+      .health-card {
+        margin-top: 26px;
+        padding: 18px;
+        border: 1px solid rgba(138, 92, 255, 0.24);
+        border-radius: 26px;
+        background: linear-gradient(160deg, rgba(138, 92, 255, .18), rgba(41, 243, 209, .055));
+      }
+
+      .health-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .health-score { color: var(--green); font-size: 22px; font-weight: 900; }
+
+      .progress {
+        height: 9px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255,255,255,.08);
+      }
+
+      .progress span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--cyan), var(--violet));
+      }
+
+      .health-card p, .assistant-note p { color: var(--muted); font-size: 12px; line-height: 1.7; }
+
+      .assistant-note {
+        position: absolute;
+        left: 18px;
+        right: 18px;
+        bottom: 20px;
+        padding: 16px;
+        border: 1px solid rgba(255,255,255,.09);
+        border-radius: 24px;
+        background: rgba(255,255,255,.04);
+      }
+
+      .main {
+        min-width: 0;
+        padding-bottom: 36px;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        padding: 18px 28px;
+        border-bottom: 1px solid var(--stroke);
+        background: rgba(6, 17, 31, .78);
+        backdrop-filter: blur(24px);
+      }
+
+      .topbar h2 {
+        margin: 3px 0 0;
+        font-size: 27px;
+        letter-spacing: -.04em;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 342px;
+        height: 46px;
+        padding: 0 15px;
+        border: 1px solid var(--stroke);
+        border-radius: 18px;
+        color: var(--muted);
+        background: rgba(255,255,255,.045);
+      }
+
+      .search input {
+        width: 100%;
+        border: 0;
+        outline: 0;
+        color: white;
+        background: transparent;
+      }
+
+      .chip, .icon-button, .primary-button, .ghost-button {
+        border: 1px solid var(--stroke);
+        cursor: pointer;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 46px;
+        padding: 0 16px;
+        border-radius: 18px;
+        color: #dffdf7;
+        background: rgba(41, 243, 209, .08);
+      }
+
+      .icon-button {
+        width: 46px;
+        height: 46px;
+        border-radius: 18px;
+        color: #dbeafe;
+        background: rgba(255,255,255,.052);
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: minmax(0, 1.58fr) 430px;
+        gap: 22px;
+        padding: 24px 28px 0;
+      }
+
+      .left-col, .right-col { display: grid; gap: 22px; align-content: start; }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        min-height: 284px;
+        padding: 28px;
+        border: 1px solid var(--stroke);
+        border-radius: 34px;
+        background:
+          linear-gradient(125deg, rgba(255,255,255,.075), rgba(255,255,255,.028)),
+          radial-gradient(circle at 82% 12%, rgba(41,243,209,.25), transparent 28%),
+          radial-gradient(circle at 78% 92%, rgba(138,92,255,.23), transparent 34%);
+        box-shadow: var(--shadow);
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        right: -80px;
+        bottom: -120px;
+        width: 360px;
+        height: 360px;
+        border-radius: 50%;
+        border: 1px solid rgba(41, 243, 209, .18);
+        box-shadow: inset 0 0 50px rgba(41, 243, 209, .07);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 12px;
+        border: 1px solid rgba(41, 243, 209, .27);
+        border-radius: 999px;
+        color: #c8fff5;
+        font-size: 12px;
+        font-weight: 800;
+        background: rgba(41, 243, 209, .1);
+      }
+
+      .hero h3 {
+        position: relative;
+        z-index: 1;
+        max-width: 720px;
+        margin: 18px 0 0;
+        font-size: 46px;
+        line-height: 1.08;
+        letter-spacing: -.065em;
+      }
+
+      .hero p {
+        position: relative;
+        z-index: 1;
+        max-width: 610px;
+        margin: 18px 0 0;
+        color: #aac0d8;
+        line-height: 1.85;
+      }
+
+      .hero-footer {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 26px;
+      }
+
+      .primary-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 50px;
+        padding: 0 19px;
+        border: 0;
+        border-radius: 18px;
+        color: #05131f;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--cyan), #99ffd4);
+        box-shadow: 0 20px 40px rgba(41, 243, 209, .23);
+        transition: transform .18s ease, box-shadow .18s ease;
+      }
+
+      .primary-button:hover { transform: translateY(-2px); box-shadow: 0 24px 48px rgba(41, 243, 209, .28); }
+
+      .hero-kpis { display: flex; gap: 18px; color: var(--muted); font-size: 13px; }
+      .hero-kpis strong { display: block; color: white; font-size: 22px; }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+
+      .metric-card, .panel {
+        border: 1px solid var(--stroke);
+        border-radius: 28px;
+        background: var(--panel);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 18px 60px rgba(0,0,0,.18);
+      }
+
+      .metric-card { padding: 18px; }
+      .metric-top { display: flex; align-items: center; justify-content: space-between; }
+      .metric-icon {
+        display: grid;
+        place-items: center;
+        width: 43px;
+        height: 43px;
+        border-radius: 16px;
+        color: var(--cyan);
+        background: rgba(41, 243, 209, .1);
+      }
+      .delta { color: var(--green); font-size: 12px; font-weight: 800; }
+      .metric-card span { display: block; margin-top: 18px; color: var(--muted); font-size: 13px; }
+      .metric-card strong { display: block; margin-top: 7px; font-size: 28px; letter-spacing: -.04em; }
+
+      .panel { padding: 20px; }
+      .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+      .panel h3 { margin: 0; font-size: 21px; letter-spacing: -.035em; }
+      .panel-sub { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+
+      .ghost-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 0 14px;
+        border-color: rgba(41, 243, 209, .25);
+        border-radius: 15px;
+        color: #c8fff5;
+        font-weight: 800;
+        background: rgba(41, 243, 209, .08);
+      }
+
+      table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+      thead th {
+        padding: 14px 14px;
+        color: #7588a3;
+        font-size: 11px;
+        letter-spacing: .16em;
+        text-align: left;
+        text-transform: uppercase;
+        background: rgba(3, 10, 20, .54);
+      }
+      thead th:first-child { border-radius: 18px 0 0 18px; }
+      thead th:last-child { border-radius: 0 18px 18px 0; }
+      tbody td { padding: 15px 14px; border-bottom: 1px solid rgba(255,255,255,.07); color: #ccdbeb; }
+      tbody tr:hover td { background: rgba(41,243,209,.045); }
+      .product-name { color: white; font-weight: 800; }
+      .sku { margin-top: 4px; color: #64758d; font-size: 12px; }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .ok { color: var(--green); background: rgba(86, 243, 154, .1); }
+      .warn { color: var(--amber); background: rgba(255, 209, 102, .1); }
+      .danger { color: var(--rose); background: rgba(255, 107, 145, .1); }
+      .score-line { display: flex; align-items: center; gap: 9px; }
+      .mini-progress { width: 70px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; }
+      .mini-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--cyan), var(--violet)); }
+
+      .chart-wrap { height: 274px; margin-top: 6px; }
+      svg { display: block; width: 100%; height: 100%; overflow: visible; }
+      .gridline { stroke: rgba(255,255,255,.09); stroke-width: 1; }
+      .axis-text { fill: #72849d; font-size: 11px; }
+      .area { fill: url(#gmvGradient); opacity: .92; }
+      .line-cyan { fill: none; stroke: var(--cyan); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .line-violet { fill: none; stroke: var(--violet); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+      .point { fill: #06111f; stroke: var(--cyan); stroke-width: 3; }
+
+      .channel-list { display: grid; gap: 12px; margin-top: 18px; }
+      .channel-item {
+        padding: 13px;
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 18px;
+        background: rgba(4, 12, 22, .42);
+      }
+      .channel-item div:first-child { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+      .channel-item strong { color: #dffdf7; }
+
+      .bars { display: flex; align-items: end; gap: 13px; height: 176px; padding: 12px 4px 0; }
+      .bar-col { display: grid; gap: 8px; flex: 1; text-align: center; color: var(--muted); font-size: 11px; }
+      .bar {
+        align-self: end;
+        min-height: 24px;
+        border-radius: 12px 12px 5px 5px;
+        background: linear-gradient(180deg, var(--cyan), rgba(41,243,209,.18));
+        box-shadow: 0 14px 28px rgba(41,243,209,.13);
+      }
+
+      .ai-panel {
+        border-color: rgba(41, 243, 209, .22);
+        background:
+          radial-gradient(circle at top right, rgba(41,243,209,.18), transparent 36%),
+          rgba(41, 243, 209, .06);
+      }
+      .prompt-box {
+        padding: 16px;
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 20px;
+        background: rgba(3, 10, 20, .48);
+      }
+      .prompt-box code { color: #d8fff7; font-family: inherit; line-height: 1.8; }
+      .output-card {
+        min-height: 95px;
+        margin-top: 13px;
+        padding: 14px;
+        border: 1px solid rgba(86,243,154,.18);
+        border-radius: 18px;
+        color: #dffdf7;
+        background: rgba(86,243,154,.06);
+        line-height: 1.65;
+      }
+
+      .timeline { display: grid; gap: 13px; }
+      .task { display: grid; grid-template-columns: 30px 1fr auto; gap: 11px; align-items: start; }
+      .dot { width: 12px; height: 12px; margin: 5px auto 0; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 18px var(--cyan); }
+      .task strong { display: block; font-size: 13px; }
+      .task span, .task time { color: var(--muted); font-size: 12px; }
+
+      .floating-card {
+        position: absolute;
+        right: 28px;
+        top: 34px;
+        z-index: 2;
+        width: 245px;
+        padding: 16px;
+        border: 1px solid rgba(255,255,255,.13);
+        border-radius: 24px;
+        background: rgba(3, 10, 20, .58);
+        backdrop-filter: blur(18px);
+      }
+      .floating-card span { color: var(--muted); font-size: 12px; }
+      .floating-card strong { display:block; margin-top: 7px; font-size: 25px; }
+
+      @media (max-width: 1280px) {
+        .content { grid-template-columns: 1fr; }
+        .right-col { grid-template-columns: repeat(2, 1fr); }
+        .ai-panel { grid-column: span 2; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="noise"></div>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-card">
+          <div class="logo">∞</div>
+          <div>
+            <p class="eyebrow">CrossAI</p>
+            <h1>跨境智店</h1>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="后台主导航">
+          <a class="nav-item active" href="#"><span class="nav-icon">▦</span>仪表盘</a>
+          <a class="nav-item" href="#products"><span class="nav-icon">◈</span>商品管理</a>
+          <a class="nav-item" href="#"><span class="nav-icon">⇄</span>订单履约</a>
+          <a class="nav-item" href="#"><span class="nav-icon">◎</span>客户分层</a>
+          <a class="nav-item" href="#"><span class="nav-icon">✦</span>AI Listing</a>
+          <a class="nav-item" href="#"><span class="nav-icon">▥</span>广告投放</a>
+          <a class="nav-item" href="#"><span class="nav-icon">◌</span>渠道设置</a>
+          <a class="nav-item" href="#"><span class="nav-icon">⚙</span>系统设置</a>
+        </nav>
+
+        <section class="health-card">
+          <div class="health-head">
+            <strong>店铺健康度</strong>
+            <span class="health-score">86</span>
+          </div>
+          <div class="progress"><span style="width:86%"></span></div>
+          <p>物流 SLA、库存覆盖与广告 ROI 均处于安全区间，建议优先补货 US 热卖 SKU。</p>
+        </section>
+
+        <section class="assistant-note">
+          <p class="eyebrow">AI Copilot</p>
+          <p>下一步建议：同步 Shopify 热门搜索词，为 24 个低 CTR 商品重写标题和首图卖点。</p>
+        </section>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Shopify Style · Dark Tech Prototype</p>
+            <h2>跨境电商 AI 运营后台</h2>
+          </div>
+          <div class="toolbar">
+            <label class="search">⌕<input placeholder="搜索商品、订单、客户或 SKU" /></label>
+            <button class="icon-button" aria-label="通知">◔</button>
+            <button class="chip">CN Store ▾</button>
+          </div>
+        </header>
+
+        <div class="content">
+          <section class="left-col">
+            <article class="hero">
+              <div class="floating-card">
+                <span>AI 标题生成节省时间</span>
+                <strong>42%</strong>
+                <div class="progress" style="margin-top:12px"><span style="width:72%"></span></div>
+              </div>
+              <span class="pill">✦ AI Listing Copilot 已开启</span>
+              <h3>用 AI 批量优化商品标题，实时追踪全球渠道增长。</h3>
+              <p>聚合 Shopify、Amazon、TikTok Shop 与 eBay 数据，统一管理商品、库存、广告和履约，用高保真深色工作台提升跨境团队决策效率。</p>
+              <div class="hero-footer">
+                <button class="primary-button" id="heroGenerate">✦ AI 生成标题</button>
+                <div class="hero-kpis">
+                  <span><strong>$128.6K</strong>今日 GMV</span>
+                  <span><strong>1,428</strong>待履约订单</span>
+                  <span><strong>8,734</strong>在线 SKU</span>
+                </div>
+              </div>
+            </article>
+
+            <section class="metrics" aria-label="核心指标">
+              <article class="metric-card"><div class="metric-top"><div class="metric-icon">$</div><span class="delta">+18.2%</span></div><span>今日 GMV</span><strong>$128.6K</strong></article>
+              <article class="metric-card"><div class="metric-top"><div class="metric-icon">↗</div><span class="delta">+9.8%</span></div><span>转化率</span><strong>6.84%</strong></article>
+              <article class="metric-card"><div class="metric-top"><div class="metric-icon">□</div><span class="delta">+312</span></div><span>在线 SKU</span><strong>8,734</strong></article>
+              <article class="metric-card"><div class="metric-top"><div class="metric-icon">⚡</div><span class="delta">+7.4%</span></div><span>AI 提效</span><strong>42%</strong></article>
+            </section>
+
+            <section class="panel" id="products">
+              <div class="panel-head">
+                <div>
+                  <h3>商品列表</h3>
+                  <p class="panel-sub">跨渠道库存、价格、状态与 AI Listing 分数</p>
+                </div>
+                <button class="ghost-button" id="batchGenerate">✦ 批量 AI 生成标题</button>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>商品 / SKU</th><th>市场</th><th>售价</th><th>库存</th><th>状态</th><th>AI 分数</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td><div class="product-name">Portable Smart Translator Earbuds</div><div class="sku">CB-AI-1024</div></td><td>US / CA</td><td>$69.90</td><td>1,248</td><td><span class="status ok">● 在售</span></td><td><div class="score-line"><div class="mini-progress"><span style="width:96%"></span></div>96</div></td></tr>
+                  <tr><td><div class="product-name">Nordic RGB Desk Lamp with Wireless Charge</div><div class="sku">CB-HOME-880</div></td><td>EU</td><td>€42.50</td><td>684</td><td><span class="status warn">● 补货中</span></td><td><div class="score-line"><div class="mini-progress"><span style="width:88%"></span></div>88</div></td></tr>
+                  <tr><td><div class="product-name">Foldable Magnetic Fitness Bottle</div><div class="sku">CB-FIT-531</div></td><td>UK / AU</td><td>£24.99</td><td>2,130</td><td><span class="status ok">● 在售</span></td><td><div class="score-line"><div class="mini-progress"><span style="width:92%"></span></div>92</div></td></tr>
+                  <tr><td><div class="product-name">AI Pet Feeder with HD Camera</div><div class="sku">CB-PET-778</div></td><td>US</td><td>$119.00</td><td>316</td><td><span class="status danger">● 预警</span></td><td><div class="score-line"><div class="mini-progress"><span style="width:79%"></span></div>79</div></td></tr>
+                </tbody>
+              </table>
+            </section>
+          </section>
+
+          <aside class="right-col">
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <h3>销售趋势</h3>
+                  <p class="panel-sub">GMV 与订单量 7 日走势</p>
+                </div>
+                <span class="pill">实时</span>
+              </div>
+              <div class="chart-wrap" aria-label="销售趋势折线图">
+                <svg viewBox="0 0 420 260" role="img">
+                  <defs><linearGradient id="gmvGradient" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#29f3d1" stop-opacity=".44"/><stop offset="100%" stop-color="#29f3d1" stop-opacity="0"/></linearGradient></defs>
+                  <path class="gridline" d="M35 36H405M35 86H405M35 136H405M35 186H405M35 236H405" />
+                  <text class="axis-text" x="10" y="40">120K</text><text class="axis-text" x="18" y="140">60K</text><text class="axis-text" x="25" y="238">0</text>
+                  <path class="area" d="M40 190 C82 174,96 136,130 143 C166 151,174 98,215 88 C253 78,270 58,310 52 C344 47,366 33,400 26 L400 236 L40 236 Z" />
+                  <path class="line-cyan" d="M40 190 C82 174,96 136,130 143 C166 151,174 98,215 88 C253 78,270 58,310 52 C344 47,366 33,400 26" />
+                  <path class="line-violet" d="M40 205 C89 185,91 165,130 168 C166 171,176 136,215 125 C252 112,269 92,310 83 C344 75,365 58,400 50" />
+                  <circle class="point" cx="400" cy="26" r="5" />
+                  <text class="axis-text" x="35" y="256">Mon</text><text class="axis-text" x="96" y="256">Tue</text><text class="axis-text" x="156" y="256">Wed</text><text class="axis-text" x="216" y="256">Thu</text><text class="axis-text" x="276" y="256">Fri</text><text class="axis-text" x="336" y="256">Sat</text><text class="axis-text" x="386" y="256">Sun</text>
+                </svg>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div><h3>区域营收</h3><p class="panel-sub">Top markets revenue</p></div>
+              </div>
+              <div class="bars">
+                <div class="bar-col"><div class="bar" style="height:148px"></div>US</div>
+                <div class="bar-col"><div class="bar" style="height:116px;background:linear-gradient(180deg,#8a5cff,rgba(138,92,255,.2))"></div>EU</div>
+                <div class="bar-col"><div class="bar" style="height:92px;background:linear-gradient(180deg,#55a6ff,rgba(85,166,255,.2))"></div>UK</div>
+                <div class="bar-col"><div class="bar" style="height:68px;background:linear-gradient(180deg,#ffd166,rgba(255,209,102,.2))"></div>AU</div>
+                <div class="bar-col"><div class="bar" style="height:58px;background:linear-gradient(180deg,#56f39a,rgba(86,243,154,.2))"></div>CA</div>
+              </div>
+              <div class="channel-list">
+                <div class="channel-item"><div><span>Shopify</span><strong>48%</strong></div><div class="progress"><span style="width:48%"></span></div></div>
+                <div class="channel-item"><div><span>Amazon</span><strong>27%</strong></div><div class="progress"><span style="width:27%;background:linear-gradient(90deg,#8a5cff,#55a6ff)"></span></div></div>
+                <div class="channel-item"><div><span>TikTok Shop</span><strong>16%</strong></div><div class="progress"><span style="width:16%;background:linear-gradient(90deg,#ffd166,#ff8f70)"></span></div></div>
+              </div>
+            </section>
+
+            <section class="panel ai-panel">
+              <div class="panel-head">
+                <div>
+                  <h3>AI 标题生成器</h3>
+                  <p class="panel-sub">输入卖点，一键输出多语言 SEO 标题</p>
+                </div>
+              </div>
+              <div class="prompt-box">
+                <p class="eyebrow">Prompt Preview</p>
+                <code>为 “AI Pet Feeder with HD Camera” 生成 5 个英文标题，突出自动喂食、夜视摄像头、App 远程控制与快速配送。</code>
+              </div>
+              <div class="output-card" id="aiOutput">点击按钮预览 AI 生成标题结果。</div>
+              <button class="primary-button" id="panelGenerate" style="width:100%;justify-content:center;margin-top:14px">✦ 立即生成标题</button>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head"><div><h3>运营时间线</h3><p class="panel-sub">AI 已整理关键待办</p></div></div>
+              <div class="timeline">
+                <div class="task"><span class="dot"></span><div><strong>US 仓低库存预警</strong><span>CB-PET-778 建议 7 天内补 1,200 件</span></div><time>09:42</time></div>
+                <div class="task"><span class="dot" style="background:#8a5cff;box-shadow:0 0 18px #8a5cff"></span><div><strong>标题 CTR 优化机会</strong><span>24 个商品可通过 AI 重写提升曝光</span></div><time>10:08</time></div>
+                <div class="task"><span class="dot" style="background:#ffd166;box-shadow:0 0 18px #ffd166"></span><div><strong>TikTok Shop 爆品趋势</strong><span>智能家居类目搜索热度上升 18%</span></div><time>11:20</time></div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const titles = [
+        'AI Pet Feeder with 1080P HD Camera, App Remote Control & Smart Meal Scheduling for Cats and Dogs',
+        'Smart Automatic Pet Feeder with Night Vision Camera, Two-Way Audio and Fast US Delivery',
+        'WiFi Pet Food Dispenser for Cats & Dogs, HD Monitoring, Portion Control and Alexa-Friendly Setup'
+      ];
+      let index = 0;
+      const output = document.querySelector('#aiOutput');
+      const generate = () => {
+        output.textContent = titles[index % titles.length];
+        output.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 260, easing: 'ease-out' });
+        index += 1;
+      };
+      document.querySelector('#heroGenerate').addEventListener('click', generate);
+      document.querySelector('#batchGenerate').addEventListener('click', generate);
+      document.querySelector('#panelGenerate').addEventListener('click', generate);
+    </script>
+  </body>
+</html>
